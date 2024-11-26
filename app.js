@@ -231,7 +231,8 @@ document.getElementById('startScanButton').addEventListener('click', async funct
             }
         }
 
-        // Hide play button and show scanner
+        // Add scanner-active class to body
+        document.body.classList.add('scanner-active');
         document.getElementById('player-container').style.display = 'none';
         document.getElementById('cancelScanButton').style.display = 'block';
         document.getElementById('qr-reader').style.display = 'block';
@@ -334,7 +335,8 @@ document.addEventListener('DOMContentLoaded', function () {
             currentTrackId = spotifyData.trackId;
             qrScanner.stop();
             
-            // Hide scanner and show play button
+            // Remove scanner-active class
+            document.body.classList.remove('scanner-active');
             document.getElementById('qr-reader').style.display = 'none';
             document.getElementById('cancelScanButton').style.display = 'none';
             document.getElementById('player-container').style.display = 'block';
@@ -484,6 +486,7 @@ document.getElementById('songinfo').addEventListener('click', function() {
 
 document.getElementById('cancelScanButton').addEventListener('click', function() {
     qrScanner.stop();
+    document.body.classList.remove('scanner-active'); // Remove scanner-active class
     document.getElementById('qr-reader').style.display = 'none';
     document.getElementById('cancelScanButton').style.display = 'none';
     document.getElementById('player-container').style.display = 'block'; // Show play button again
