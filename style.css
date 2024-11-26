@@ -89,7 +89,7 @@ body {
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
-    z-index: 1; /* Base layer */
+    z-index: 1;
 }
 
 /* Outer circle animation */
@@ -178,7 +178,7 @@ body {
     display: none;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1400px) {
     .header h1 {
         font-size: 2rem;
     }
@@ -186,16 +186,57 @@ body {
     .container {
         padding: 0 10px;
     }
+
+    .button_startstop {
+        width: 192px; /* 80% of 240px */
+        height: 192px; /* 80% of 240px */
+        border-width: 5px; /* Slightly thinner border for smaller button */
+    }
+
+    /* Adjust the outer circle animation for mobile */
+    .button_startstop::before {
+        top: -14px; /* Adjusted from -18px */
+        left: -14px;
+        right: -14px;
+        bottom: -14px;
+        border-width: 5px;
+    }
+
+    /* Adjust the icon size for mobile */
+    .button_startstop i {
+        font-size: 72px; /* 80% of 90px */
+    }
+}
+
+/* Even smaller for very small devices */
+@media screen and (max-width: 320px) {
+    .button_startstop {
+        width: 160px;
+        height: 160px;
+        border-width: 4px;
+    }
+
+    .button_startstop::before {
+        top: -12px;
+        left: -12px;
+        right: -12px;
+        bottom: -12px;
+        border-width: 4px;
+    }
+
+    .button_startstop i {
+        font-size: 60px;
+    }
 }
 
 #qr-reader {
-    position: absolute; /* or absolute */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* Ensure it's above other content */
-    background: linear-gradient(135deg, #FFA500, #FF8C00, #FF6347);  /* Match body gradient */
+    z-index: 1;
+    background: transparent;
 }
 
 #qr-video {
@@ -220,14 +261,31 @@ body {
 }
 
 #cancelScanButton {
-    position: absolute;
+    position: fixed;
     display: none;
     background-color: #e95d5d;
     color: white;
     z-index: 4;
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#cancelScanButton:hover {
+    background-color: #d54545;
+    transform: translateX(-50%) scale(1.1);
+    transition: all 0.3s ease;
+}
+
+#cancelScanButton:active {
+    transform: translateX(-50%) scale(0.95);
 }
 
 #cookielist {
@@ -246,7 +304,7 @@ body {
 
 h2 {
     font-family: 'Imperial Script', cursive;
-    font-size: 5em; /* Increased from 3em to 5em */
+    font-size: 3em; /* Increased from 3em to 5em */
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
@@ -321,4 +379,17 @@ body.debug-mode #error-message {
 @keyframes twinkle {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 0.6; }
+}
+
+/* Add a new overlay class for the scanner */
+.scanner-active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: linear-gradient(145deg, #FF8C00, #FFA500, #FFD700);
+    pointer-events: none;
 }
