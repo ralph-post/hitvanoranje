@@ -229,8 +229,7 @@ document.getElementById('startScanButton').addEventListener('click', async funct
             }
         }
 
-        // Hide play button and show scanner
-        document.getElementById('player-container').style.display = 'none';
+        // Only show and start scanner after confirming we have authentication
         document.getElementById('cancelScanButton').style.display = 'block';
         document.getElementById('qr-reader').style.display = 'block';
         await qrScanner.start();
@@ -329,20 +328,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const spotifyData = parseSpotifyLink(spotifyURL);
         if (spotifyData) {
-            currentTrackId = spotifyData.trackId;
+            currentTrackId = spotifyData.trackId; // Store the track ID
             qrScanner.stop();
             
-            // Hide scanner and show play button
-            document.getElementById('qr-reader').style.display = 'none';
-            document.getElementById('cancelScanButton').style.display = 'none';
-            document.getElementById('player-container').style.display = 'block';
+            // Safely hide elements
+            const qrReader = document.getElementById('qr-reader');
+            const cancelButton = document.getElementById('cancelScanButton');
+            if (qrReader) qrReader.style.display = 'none';
+            if (cancelButton) cancelButton.style.display = 'none';
             
             lastDecodedText = "";
 
-            // Update play button
+            // Safely update play button
             const startStopButton = document.getElementById('startstop-video');
             if (startStopButton) {
                 startStopButton.innerHTML = '<i class="fas fa-play"></i>';
+                startStopButton.style.display = 'block';
             }
         }
     }
@@ -481,10 +482,10 @@ document.getElementById('songinfo').addEventListener('click', function() {
 });
 
 document.getElementById('cancelScanButton').addEventListener('click', function() {
-    qrScanner.stop();
-    document.getElementById('qr-reader').style.display = 'none';
-    document.getElementById('cancelScanButton').style.display = 'none';
-    document.getElementById('player-container').style.display = 'block'; // Show play button again
+    qrScanner.stop(); // Stop scanning after a result is found
+    document.getElementById('qr-reader').style.display = 'none'; // Hide the scanner after successful scan
+    document.getElementById('cancelScanButton').style.display = 'none'; // Hide the cancel-button
+    document.getElementById('stopButton').style.display = 'none'; // Hide stop button
 });
 document.getElementById('cb_settings').addEventListener('click', function() {
     var cb = document.getElementById('cb_settings');
@@ -582,21 +583,25 @@ function playVideoAtRandomStartTime() {
     });
 }
 
-// Add this function to check if token is valid
-async function checkAndRefreshToken() {
-    const tokenExpiry = localStorage.getItem('spotify_token_expiry');
-    const currentTime = Date.now();
-    
-    // If token is expired or will expire in next 60 seconds
-    if (!tokenExpiry || currentTime >= parseInt(tokenExpiry) - 60000) {
-        console.log('Token expired or about to expire, refreshing...');
-        await initializeSpotifyAuth();
-        return true;
+// Add event listener for stop button
+document.getElementById('stopButton').addEventListener('click', async function() {
+    try {
+        await fetch('https://api.spotify.com/v1/me/player/pause', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            },
+        });
+        this.style.display = 'none'; // Hide stop button after stopping
+    } catch (error) {
+        console.error('Failed to stop playback:', error);
     }
-    return false;
-}
+});
 
-// Update the play/pause/stop button functionality
+// Add this variable at the top of your file to track the current track ID
+let currentTrackId = null;
+
+// Update the play/pause button functionality
 document.getElementById('startstop-video').addEventListener('click', async function() {
     if (!isPlayerReady || !deviceId) {
         console.error('Spotify player not ready', { isPlayerReady, deviceId });
@@ -604,37 +609,21 @@ document.getElementById('startstop-video').addEventListener('click', async funct
     }
 
     try {
-        // Check token validity before making API calls
-        const tokenRefreshed = await checkAndRefreshToken();
-        if (tokenRefreshed) {
-            console.log('Token refreshed, updating headers');
-        }
-
+        // Get current playback state
         const state = await player.getCurrentState();
         console.log('Current playback state:', state);
 
         if (state && !state.paused) {
-            // If music is playing, stop it
+            // If music is playing, pause it
             await player.pause();
-            try {
-                // Clear the playback but keep the track ID
-                await fetch(`https://api.spotify.com/v1/me/player/pause`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    },
-                });
-            } catch (error) {
-                console.warn('Error while pausing via API:', error);
-                // Continue even if this fails
-            }
             this.innerHTML = '<i class="fas fa-play"></i>';
+            document.getElementById('stopButton').style.display = 'none';
         } else {
-            // If music is stopped and we have a track, play it
+            // If music is paused or we have a new track, play it
             if (currentTrackId) {
                 console.log('Starting playback for track:', currentTrackId);
                 
-                // Set the active device first
+                // First, set the active device
                 await fetch(`https://api.spotify.com/v1/me/player`, {
                     method: 'PUT',
                     body: JSON.stringify({
@@ -642,39 +631,33 @@ document.getElementById('startstop-video').addEventListener('click', async funct
                         play: false
                     }),
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
                     },
                 });
 
-                // Small delay to ensure device is active
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                // Start playback
-                const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+                // Then start playback
+                await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
                     method: 'PUT',
                     body: JSON.stringify({
-                        uris: [`spotify:track:${currentTrackId}`],
-                        position_ms: 0
+                        uris: [`spotify:track:${currentTrackId}`]
                     }),
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
                     },
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Spotify API error: ${errorData.error?.message || response.statusText}`);
-                }
 
                 // Check if random playback is enabled
                 const randomPlayback = document.getElementById('randomplayback');
                 if (randomPlayback && randomPlayback.checked) {
-                    await playVideoAtRandomStartTime();
+                    playVideoAtRandomStartTime();
                 } else {
                     await player.resume();
                 }
 
-                this.innerHTML = '<i class="fas fa-stop"></i>';
+                this.innerHTML = '<i class="fas fa-pause"></i>';
+                document.getElementById('stopButton').style.display = 'block';
             }
         }
     } catch (error) {
@@ -682,65 +665,22 @@ document.getElementById('startstop-video').addEventListener('click', async funct
         const errorElement = document.getElementById('error-message');
         if (errorElement) {
             errorElement.textContent = `Playback error: ${error.message}`;
-            // Auto-hide error after 5 seconds
-            setTimeout(() => {
-                errorElement.textContent = '';
-            }, 5000);
-        }
-        
-        // If we get a 403 error, try to re-authenticate
-        if (error.message.includes('403')) {
-            console.log('Attempting to re-authenticate...');
-            await initializeSpotifyAuth();
         }
     }
 });
 
-// Add this variable at the top of your file to track the current track ID
-let currentTrackId = null;
-
-// Add debug mode toggle
-document.addEventListener('keydown', function(event) {
-    // Toggle debug mode when pressing Ctrl+D or Cmd+D
-    if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
-        event.preventDefault();
-        document.body.classList.toggle('debug-mode');
+// Update the stop button handler to update the play button text
+document.getElementById('stopButton').addEventListener('click', async function() {
+    try {
+        await fetch('https://api.spotify.com/v1/me/player/pause', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            },
+        });
+        this.style.display = 'none';
+        document.getElementById('startstop-video').innerHTML = '<i class="fas fa-play"></i>'; // Update play button text
+    } catch (error) {
+        console.error('Failed to stop playback:', error);
     }
-});
-
-// Add this function to create stars
-function createStars() {
-    const numberOfStars = 50; // Adjust number of stars
-    const container = document.body;
-    
-    for (let i = 0; i < numberOfStars; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.innerHTML = '★';
-        
-        // Random position
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        
-        // Random size
-        const size = Math.random() * 15 + 10; // Between 10px and 25px
-        
-        // Random animation delay
-        const delay = Math.random() * 2;
-        
-        star.style.cssText = `
-            left: ${x}vw;
-            top: ${y}vh;
-            font-size: ${size}px;
-            animation-delay: ${delay}s;
-        `;
-        
-        container.appendChild(star);
-    }
-}
-
-// Call createStars when the document is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    createStars();
-    // ... rest of your existing DOMContentLoaded code ...
 });

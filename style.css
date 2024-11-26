@@ -6,12 +6,20 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Imperial Script', cursive;
+    background: linear-gradient(145deg, #FF8C00, #FFA500, #FFD700);  /* Dark orange to orange to golden yellow */
+    background-attachment: fixed;  /* Prevents gradient from scrolling */
     color: #333;
     line-height: 1.6;
     padding: 20px;
     text-align: center;
+    min-height: 100vh;  /* Ensures gradient covers full viewport */
+    margin: 0;
+    padding: 0;
+    animation: gradientShift 15s ease infinite;
+    background-size: 200% 200%;
+    position: relative;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .container {
@@ -41,47 +49,104 @@ body {
 
 .button {
     display: inline-block;
+    width: 100px;
+    height: 100px;
     background: #0056b3;
     color: #ffffff;
-    padding: 10px 20px;
-    margin: 10px 0;
-    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 50%;
     cursor: pointer;
     transition: background 0.3s ease;
+    border: none;
 }
 
 .button_startscan {
-    width: 200px;
-    height: 80px;
+    width: 300px;
+    height: 50px;
     display: inline-block;
-    background: #0056b3;
+    background: #00b315;
     color: #ffffff;
-    padding: 10px 5px;
-    margin: 10px 0;
-    border-radius: 5px;
+    padding: 10px;
+    margin: 20px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background 0.3s ease;
+    font-size: 1.5em;
+    border: none;
+    line-height: 30px;
 }
 
 .button_startstop {
-    width: 100px;
-    height: 50px;
-    display: inline-block;
-    background: #0056b3;
-    color: #ffffff;
-    padding: 10px 5px;
-    margin: 10px 0;
-    border-radius: 5px;
+    display: block;
+    margin: 40px auto;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: transparent;
+    border: 6px solid white;
+    color: white;
     cursor: pointer;
-    transition: background 0.3s ease;
+    position: relative;
+    transition: all 0.3s ease;
+    z-index: 1; /* Base layer */
+}
+
+/* Outer circle animation */
+.button_startstop::before {
+    content: '';
+    position: absolute;
+    top: -18px;
+    left: -18px;
+    right: -18px;
+    bottom: -18px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.2);
+    animation: pulse 2s infinite;
+    z-index: -1; /* Place behind the button */
+    pointer-events: none; /* Prevent interference with button clicks */
+}
+
+/* Icon styling */
+.button_startstop i {
+    font-size: 90px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2; /* Place on top of button */
+}
+
+/* Hover effect */
+.button_startstop:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Pulse animation for the outer circle */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .cancelScanButton {
     z-index: 20;
 }
 
-.button:hover {
+.button:hover,
+.button_startscan:hover,
+.button_startstop:hover {
     background: #004494;
+    transform: scale(1.05);
 }
 
 .text-block {
@@ -96,11 +161,12 @@ body {
     position: absolute;
     top: -12px;
     left: 50%;
-    transform: translateX( -50% );
+    transform: translateX(-50%);
     padding: 0 0.5rem;
     font-size: 20px;
     line-height: 1;
-    background-color: #f4f4f4;
+    background-color: transparent;  /* Changed from solid color */
+    color: #333;  /* Ensure text is visible */
 }
 
 .settings_div {
@@ -129,7 +195,7 @@ body {
     width: 100%;
     height: 100%;
     z-index: 1; /* Ensure it's above other content */
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #FFA500, #FF8C00, #FF6347);  /* Match body gradient */
 }
 
 #qr-video {
@@ -155,10 +221,13 @@ body {
 
 #cancelScanButton {
     position: absolute;
-    display:none;
+    display: none;
     background-color: #e95d5d;
-    color: black;
+    color: white;
     z-index: 4;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
 }
 
 #cookielist {
@@ -167,4 +236,89 @@ body {
 
 #playback-duration {
     width: 50px;
+}
+
+#stopButton {
+    background-color: #ff4444;
+    color: white;
+    /* Add any other styles you want */
+}
+
+h2 {
+    font-family: 'Imperial Script', cursive;
+    font-size: 5em; /* Increased from 3em to 5em */
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+
+
+/* Optional: Add subtle animation to the gradient */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Make sure text is readable on orange background */
+h2, label, div {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Container for the entire play button section */
+#player-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* Adjust as needed */
+    margin: 0 auto;
+    overflow: visible;
+}
+
+/* Hide all elements after the player-container by default */
+#videoid, 
+#videotitle, 
+#videoduration,
+hr,
+#cb_settings,
+label[for="cb_settings"],
+.settings_div,
+#player,
+#track-id,
+#loading,
+#error-message {
+    display: none;
+}
+
+/* Only show these elements when debug mode is active */
+body.debug-mode #videoid,
+body.debug-mode #videotitle,
+body.debug-mode #videoduration,
+body.debug-mode hr,
+body.debug-mode #cb_settings,
+body.debug-mode label[for="cb_settings"],
+body.debug-mode #error-message {
+    display: block;
+}
+
+/* Star background */
+.star {
+    position: fixed;
+    opacity: 0.3;
+    color: white;
+    font-size: 20px;
+    animation: twinkle 1.5s infinite ease-in-out;
+    z-index: -1;
+}
+
+/* Twinkle animation for stars */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
 }
