@@ -20,6 +20,7 @@ body {
     background-size: 200% 200%;
     position: relative;
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    z-index: 0;
 }
 
 .container {
@@ -89,7 +90,7 @@ body {
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
-    z-index: 1;
+    z-index: 3;
 }
 
 /* Outer circle animation */
@@ -235,7 +236,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 2;
     background: transparent;
 }
 
@@ -389,7 +390,8 @@ body.debug-mode #error-message {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    z-index: 1;
     background: linear-gradient(145deg, #FF8C00, #FFA500, #FFD700);
     pointer-events: none;
+    opacity: 0.9;
 }
