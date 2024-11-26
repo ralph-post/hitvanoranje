@@ -7,7 +7,9 @@ let qrScanner;
 let csvCache = {};
 let accessToken = null;
 const CLIENT_ID = '5199ef6e13344a6baf43586b0e499448'; // Get this from Spotify Developer Dashboard
-const REDIRECT_URI = 'http://localhost:8000/callback'; // Updated redirect URI
+const REDIRECT_URI = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8000/callback'
+    : `${window.location.origin}/callback`; // Updated redirect URI
 const SCOPES = [
     'streaming',
     'user-read-email',
