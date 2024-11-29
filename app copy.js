@@ -84,6 +84,14 @@ async function initializeSpotifyAuth() {
     const tokenExpiry = localStorage.getItem('spotify_token_expiry');
     const isTokenValid = storedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry);
     
+    console.log('InitializeSpotifyAuth - Token status:', {
+        hasStoredToken: !!storedToken,
+        hasTokenExpiry: !!tokenExpiry,
+        isTokenValid,
+        currentTime: Date.now(),
+        expiryTime: parseInt(tokenExpiry)
+    });
+
     if (isTokenValid) {
         console.log('Using existing valid token in initializeSpotifyAuth');
         accessToken = storedToken;
@@ -93,11 +101,8 @@ async function initializeSpotifyAuth() {
         return;
     }
     
-    // Only redirect to Spotify auth if token is invalid or missing
-    if (!storedToken || !isTokenValid) {
-        console.log('No valid token, redirecting to Spotify auth');
-        await redirectToSpotifyAuth();
-    }
+    console.log('No valid token, redirecting to Spotify auth');
+    await redirectToSpotifyAuth();
 }
 
 async function redirectToSpotifyAuth() {
